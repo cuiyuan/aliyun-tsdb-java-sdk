@@ -1259,4 +1259,19 @@ public class BalTSDBClient implements TSDB {
     public void multiFieldPut(Collection<MultiFieldPoint> points, AbstractMultiFieldBatchPutCallback batchPutCallback) {
         throw new NotImplementedException();
     }
+
+    @Override
+    public void telnetPut(Point point) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void telnetPut(Point... points) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void telnetPut(Collection<Point> points) {
+        throw new NotImplementedException();
+    }
 }

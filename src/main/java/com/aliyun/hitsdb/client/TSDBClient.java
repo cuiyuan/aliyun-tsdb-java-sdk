@@ -364,6 +364,25 @@ public class TSDBClient implements TSDB {
         queue.send(point);
     }
 
+    @Override
+    public void telnetPut(Point point) {
+        queue.sendTelnetPoint(point);
+    }
+
+    @Override
+    public void telnetPut(Point... points) {
+        for (Point p : points) {
+            this.telnetPut(p);
+        }
+    }
+
+    @Override
+    public void telnetPut(Collection<Point> points) {
+        for (Point p : points) {
+            this.telnetPut(p);
+        }
+    }
+
     @Deprecated
     @Override
     public void multiValuedPut(MultiValuedPoint point) {

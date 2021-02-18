@@ -25,6 +25,7 @@ public class DataPointQueue implements DataQueue {
      */
     private final BlockingQueue<Point> pointQueue;
     private final BlockingQueue<MultiFieldPoint> multiFieldPointQueue;
+    private final BlockingQueue<Point> telnetQueue;
 
     // pointsCollectionQueue is designed for the async put interfaces,
     // which triggers a specified callback every time when a collection sent.
@@ -45,6 +46,8 @@ public class DataPointQueue implements DataQueue {
         this.multiFieldPointQueue = new ArrayBlockingQueue<MultiFieldPoint>(multiFieldBatchPutBufferSize);
 
         this.pointsCollectionQueue = new ArrayBlockingQueue(Math.max(batchPutBufferSize, multiFieldBatchPutBufferSize));
+
+        this.telnetQueue = new ArrayBlockingQueue<Point>(batchPutBufferSize);
 
         this.waitCloseTimeLimit = waitCloseTimeLimit;
         this.backpressure = backpressure;
@@ -141,6 +144,34 @@ public class DataPointQueue implements DataQueue {
     }
 
     @Override
+    public void sendTelnetPoint(Point point) {
+        verifyWrite();
+        if (this.backpressure) {
+            try {
+                telnetQueue.put(point);
+            } catch (InterruptedException e) {
+                LOGGER.error("Client Thread been Interrupted.", e);
+            }
+        } else {
+            try {
+                telnetQueue.add(point);
+            } catch (IllegalStateException exception) {
+                throw new BufferQueueFullException("The buffer queue is full.", exception);
+            }
+        }
+    }
+
+    @Override
+    public Point receiveTelnetPoint() throws InterruptedException{
+        return telnetQueue.take();
+    }
+
+    @Override
+    public Point receiveTelnetPoint(int timeout) throws InterruptedException{
+        return telnetQueue.poll(timeout, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
     public void forbiddenSend() {
         forbiddenWrite.compareAndSet(false, true);
     }
@@ -156,9 +187,7 @@ public class DataPointQueue implements DataQueue {
             }
 
             while (true) {
-                boolean empty = pointQueue.isEmpty();
-                boolean multiEmpty = multiFieldPointQueue.isEmpty();
-                if (empty && multiEmpty) {
+                if (isEmpty()) {
                     return;
                 } else {
                     try {
@@ -176,7 +205,7 @@ public class DataPointQueue implements DataQueue {
 
     @Override
     public boolean isEmpty() {
-        return pointQueue.isEmpty() && multiFieldPointQueue.isEmpty();
+        return pointQueue.isEmpty() && multiFieldPointQueue.isEmpty() && telnetQueue.isEmpty();
     }
 
     @Override

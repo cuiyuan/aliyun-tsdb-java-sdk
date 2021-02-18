@@ -38,6 +38,12 @@ public interface TSDB extends Closeable {
      */
     void put(Collection<Point> points);
 
+    void telnetPut(Point point);
+
+    void telnetPut(Point... points);
+
+    void telnetPut(Collection<Point> points);
+
 
 
     /**

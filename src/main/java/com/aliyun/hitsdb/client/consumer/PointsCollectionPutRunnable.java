@@ -56,7 +56,7 @@ public class PointsCollectionPutRunnable extends AbstractBatchPutRunnable implem
                 }
             } catch (InterruptedException itex) {
                 readyClose = true;
-                LOGGER.info("The thread {} is interrupted. cause {}", Thread.currentThread().getName(), itex.getMessage());
+                LOGGER.warn("The thread {} is interrupted. cause {}", Thread.currentThread().getName(), itex);
                 break;
             }
 

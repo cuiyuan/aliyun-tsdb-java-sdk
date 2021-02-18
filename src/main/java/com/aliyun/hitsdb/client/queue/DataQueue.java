@@ -24,6 +24,12 @@ public interface DataQueue {
 
     PointsCollection receivePoints(int timeout) throws InterruptedException;
 
+    void sendTelnetPoint(Point point);
+
+    Point receiveTelnetPoint() throws InterruptedException;
+
+    Point receiveTelnetPoint(int timeout) throws InterruptedException;
+
     void forbiddenSend();
 
     void waitEmpty();

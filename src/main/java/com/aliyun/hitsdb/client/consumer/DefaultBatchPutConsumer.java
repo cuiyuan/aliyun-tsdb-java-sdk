@@ -1,5 +1,6 @@
 package com.aliyun.hitsdb.client.consumer;
 
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,6 +20,7 @@ public class DefaultBatchPutConsumer implements Consumer {
     private ExecutorService threadPool;
     private ExecutorService multiFieldThreadPool;
     private ExecutorService pointsThreadPool;
+    private ExecutorService telnetThreadPool;
     private int batchPutConsumerThreadCount;
     private int multiFieldBatchPutConsumerThreadCount;
     private int pointsBatchPutConsumerThreadCount;
@@ -38,6 +40,7 @@ public class DefaultBatchPutConsumer implements Consumer {
         this.rateLimiter = rateLimiter;
         if (batchPutConsumerThreadCount > 0) {
             this.threadPool = Executors.newFixedThreadPool(batchPutConsumerThreadCount, new BatchPutThreadFactory("batch-put-thread"));
+            this.telnetThreadPool = Executors.newFixedThreadPool(batchPutConsumerThreadCount, new BatchPutThreadFactory("telnet-put-thread"));
         }
         if (multiFieldBatchPutConsumerThreadCount > 0) {
             this.multiFieldThreadPool = Executors.newFixedThreadPool(multiFieldBatchPutConsumerThreadCount, new BatchPutThreadFactory("multi-field-batch-put-thread"));
@@ -47,12 +50,14 @@ public class DefaultBatchPutConsumer implements Consumer {
             this.pointsThreadPool = Executors.newFixedThreadPool(pointsBatchPutConsumerThreadCount, new BatchPutThreadFactory("points-batch-put-thread"));
         }
 
-        this.countDownLatch = new CountDownLatch(config.getBatchPutConsumerThreadCount() + config.getMultiFieldBatchPutConsumerThreadCount() + this.pointsBatchPutConsumerThreadCount);
+        this.countDownLatch = new CountDownLatch(config.getBatchPutConsumerThreadCount() * 2  + config.getMultiFieldBatchPutConsumerThreadCount() + this.pointsBatchPutConsumerThreadCount);
     }
 
+    @Override
     public void start() {
         for (int i = 0; i < batchPutConsumerThreadCount; i++) {
             threadPool.submit(new BatchPutRunnable(this.dataQueue, this.httpclient, this.config, this.countDownLatch, this.rateLimiter));
+            telnetThreadPool.submit(new BatchTelnetPutRunnable(this.dataQueue, this.httpclient, this.config, this.countDownLatch, this.rateLimiter));
         }
 
         for (int i = 0; i < multiFieldBatchPutConsumerThreadCount; i++) {
@@ -85,6 +90,10 @@ public class DefaultBatchPutConsumer implements Consumer {
                 pointsThreadPool.shutdownNow();
             }
 
+            if (multiFieldThreadPool != null) {
+                multiFieldThreadPool.shutdownNow();
+            }
+
         } else {
             if (threadPool != null) {
                 // 截断消费者线程。
@@ -103,6 +112,12 @@ public class DefaultBatchPutConsumer implements Consumer {
             if (pointsThreadPool != null) {
                 while (!pointsThreadPool.isShutdown() || !pointsThreadPool.isTerminated()) {
                     pointsThreadPool.shutdownNow();
+                }
+            }
+
+            if (telnetThreadPool != null) {
+                while (!telnetThreadPool.isShutdown() || !telnetThreadPool.isTerminated()) {
+                    telnetThreadPool.shutdownNow();
                 }
             }
 
