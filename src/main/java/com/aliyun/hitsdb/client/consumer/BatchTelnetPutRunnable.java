@@ -33,7 +33,7 @@ public class BatchTelnetPutRunnable extends AbstractBatchPutRunnable implements 
         super(dataQueue, httpclient, countDownLatch, config, rateLimiter);
         this.batchPutCallback = config.getBatchPutCallback();
         try {
-            this.telnetConnection = new TelnetConnection(httpclient.getHost(),httpclient.getPort());
+            this.telnetConnection = new TelnetConnection(config);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

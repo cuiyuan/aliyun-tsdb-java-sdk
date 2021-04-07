@@ -1,5 +1,6 @@
 package com.aliyun.hitsdb.client.telnet;
 
+import com.aliyun.hitsdb.client.Config;
 import com.aliyun.hitsdb.client.value.request.Point;
 import org.apache.commons.net.telnet.TelnetClient;
 import org.slf4j.Logger;
@@ -25,10 +26,12 @@ public class TelnetConnection {
     private int port;
     private InputStream in;
     private PrintStream out;
+    private boolean readAck;
 
-    public TelnetConnection(String host, int port) throws IOException {
-        this.host = host;
-        this.port = port;
+    public TelnetConnection(Config config) throws IOException {
+        this.host = config.getHost();
+        this.port = config.getPort();
+        this.readAck = config.getTelnetReadAck();
         connect();
     }
 
@@ -83,17 +86,20 @@ public class TelnetConnection {
         }
 
         this.out.flush();
-        try {
-            String response = readResponse();
-            LOG.debug("put result: {}", response);
-            if ("null".equals(response)) { //服务端连接断开的时候，response为"null"
-                throw new IOException("response null");
+        if (readAck) {
+            try {
+                String response = readResponse();
+                LOG.debug("put result: {}", response);
+                if ("null".equals(response)) { //服务端连接断开的时候，response为"null"
+                    throw new IOException("response null");
+                }
+                return response;
+            } catch (IOException ex) {
+                LOG.error("IOException occurred while read: ", ex);
+                throw ex;
             }
-            return response;
-        } catch (IOException ex) {
-            LOG.error("IOException occurred while read: ", ex);
-            throw ex;
         }
+        return "";
     }
 
 

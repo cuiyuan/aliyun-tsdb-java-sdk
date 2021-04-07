@@ -81,5 +81,7 @@ public interface Config {
 
     int getMaxTPS();
 
+    boolean getTelnetReadAck();
+
     Config copy(String host, int port);
 }

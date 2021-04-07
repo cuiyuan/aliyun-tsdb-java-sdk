@@ -142,6 +142,8 @@ public abstract class AbstractConfig implements Config {
 
     protected byte[] certContent;
 
+    protected boolean telnetReadAck;
+
     @Override
     public boolean isSslEnable() {
         return sslEnable;
@@ -303,6 +305,11 @@ public abstract class AbstractConfig implements Config {
     }
 
     @Override
+    public boolean getTelnetReadAck(){
+        return telnetReadAck;
+    }
+
+    @Override
     public int getMultiFieldBatchPutBufferSize() {
         return this.multiFieldBatchPutBufferSize;
     }
@@ -332,6 +339,7 @@ public abstract class AbstractConfig implements Config {
         config.httpKeepaliveTime = this.httpKeepaliveTime;
         config.maxTPS = this.maxTPS;
         config.asyncPut = this.asyncPut;
+        config.telnetReadAck = this.telnetReadAck;
         if (this.putRequestLimitSwitch && this.putRequestLimit <= 0) {
             config.putRequestLimit = this.httpConnectionPool;
         }
