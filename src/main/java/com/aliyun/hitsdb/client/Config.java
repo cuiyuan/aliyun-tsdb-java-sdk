@@ -83,5 +83,7 @@ public interface Config {
 
     boolean getTelnetReadAck();
 
+    boolean isTelnetEnable();
+
     Config copy(String host, int port);
 }

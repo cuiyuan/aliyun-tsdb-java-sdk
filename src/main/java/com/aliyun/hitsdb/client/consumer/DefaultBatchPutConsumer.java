@@ -55,9 +55,14 @@ public class DefaultBatchPutConsumer implements Consumer {
 
     @Override
     public void start() {
+        if (config.isTelnetEnable()) {
+            for (int i = 0; i < batchPutConsumerThreadCount; i++) {
+                telnetThreadPool.submit(new BatchTelnetPutRunnable(this.dataQueue, this.httpclient, this.config, this.countDownLatch, this.rateLimiter));
+            }
+        }
+
         for (int i = 0; i < batchPutConsumerThreadCount; i++) {
             threadPool.submit(new BatchPutRunnable(this.dataQueue, this.httpclient, this.config, this.countDownLatch, this.rateLimiter));
-            telnetThreadPool.submit(new BatchTelnetPutRunnable(this.dataQueue, this.httpclient, this.config, this.countDownLatch, this.rateLimiter));
         }
 
         for (int i = 0; i < multiFieldBatchPutConsumerThreadCount; i++) {

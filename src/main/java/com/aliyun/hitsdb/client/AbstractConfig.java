@@ -144,6 +144,8 @@ public abstract class AbstractConfig implements Config {
 
     protected boolean telnetReadAck;
 
+    protected boolean telnetEnable;
+
     @Override
     public boolean isSslEnable() {
         return sslEnable;
@@ -310,6 +312,12 @@ public abstract class AbstractConfig implements Config {
     }
 
     @Override
+    public boolean isTelnetEnable() {
+        return telnetEnable;
+    }
+
+
+    @Override
     public int getMultiFieldBatchPutBufferSize() {
         return this.multiFieldBatchPutBufferSize;
     }
@@ -340,6 +348,7 @@ public abstract class AbstractConfig implements Config {
         config.maxTPS = this.maxTPS;
         config.asyncPut = this.asyncPut;
         config.telnetReadAck = this.telnetReadAck;
+        config.telnetEnable = this.telnetEnable;
         if (this.putRequestLimitSwitch && this.putRequestLimit <= 0) {
             config.putRequestLimit = this.httpConnectionPool;
         }

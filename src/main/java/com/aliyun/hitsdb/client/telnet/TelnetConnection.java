@@ -82,6 +82,7 @@ public class TelnetConnection {
             }
             String commandLine = String.format("put %s %d %s %s",
                     point.getMetric(), point.getTimestamp(), point.getValue(), tagset.toString());
+//            LOG.info(commandLine);
             this.out.println(commandLine);
         }
 

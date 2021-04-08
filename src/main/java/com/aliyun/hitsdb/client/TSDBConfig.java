@@ -39,6 +39,7 @@ public class TSDBConfig extends AbstractConfig {
         private boolean putRequestLimitSwitch = true;
 
         private boolean telnetReadAck = false;
+        private boolean telnetEnable = false;
         private int batchPutBufferSize = 10000;
         private int multiFieldBatchPutBufferSize = 10000;
         private AbstractBatchPutCallback<?> batchPutCallback;
@@ -106,6 +107,11 @@ public class TSDBConfig extends AbstractConfig {
             }
             this.addresses.add(new Host(host, port));
             this.uniqueHost.add(key);
+            return this;
+        }
+
+        public Builder telnetEnable(boolean bTelnetEnable) {
+            this.telnetEnable = bTelnetEnable;
             return this;
         }
 
@@ -351,6 +357,7 @@ public class TSDBConfig extends AbstractConfig {
             config.basicPwd = this.basicPwd;
             config.certContent = this.certContent;
             config.telnetReadAck = this.telnetReadAck;
+            config.telnetEnable = this.telnetEnable;
 
             return config;
         }
